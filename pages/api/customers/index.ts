@@ -18,14 +18,19 @@ export default async function customers(req: NextApiRequest, res: NextApiRespons
     switch (method) {
         case 'GET':
             try {
-                const { accessToken, storeHash } = await getSession(req);
+                const session = await getSession(req);
+                if (!session) {
+                    return res.status(401).json({ message: 'Unauthorized - No session found' });
+                }
+                const { accessToken, storeHash } = session;
                 const bigcommerce = bigcommerceClient(accessToken, storeHash);
                 const query = `include=segment_ids,shopper_profile_id${limit ? `&limit=${limit}` : ''}${page ? `&page=${page}` : ''}${ids ? `&id:in=${ids}` : ''}${name ? `&name:like=${name}` : ''}${emails ? `&email:in=${emails}` : ''}`
                 const bcRes = await bigcommerce.get(`/customers?${query}`);
                 res.status(200).json(bcRes);
             } catch (error) {
+                logger.error('Error in customers API:', error);
                 const { message, response } = error;
-                res.status(response?.status || 500).json({ message });
+                res.status(response?.status || 500).json({ message: message || 'Internal server error' });
             }
             break;
         default:

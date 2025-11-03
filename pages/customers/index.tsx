@@ -48,7 +48,7 @@ const Customers = () => {
     try {
       let query = ""
       const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
-      
+
       if (emailRegex.test(name)) {
         // If the entered value matches the email format, use the email:in query
         query = `email:in=${encodeURIComponent(name)}&context=${encodedContext}`
@@ -59,12 +59,27 @@ const Customers = () => {
         // If the entered value is a string, use the name:like query
         query = `name:like=${name}&context=${encodedContext}`
       }
-  
+
       const url = `/api/customers?${query}`
       const res = await fetch(url)
-      const { data } = await res.json()
+
+      // Check if response is OK before parsing
+      if (!res.ok) {
+        let errorMessage = `Server error: ${res.status}`
+        try {
+          const errorData = await res.json()
+          errorMessage = errorData.message || errorMessage
+        } catch {
+          // If JSON parsing fails, use status text
+          errorMessage = res.statusText || errorMessage
+        }
+        throw new Error(errorMessage)
+      }
+
+      const responseData = await res.json()
+      const data = responseData.data || []
       setCustomers(data)
-  
+
       if (data.length === 0) {
             const alert = {
                 type: 'warning',
