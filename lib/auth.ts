@@ -49,18 +49,46 @@ export function setSession(session: SessionProps) {
 }
 
 export async function getSession({ query: { context = '' } }: NextApiRequest) {
-    if (typeof context !== 'string') return;
-    const { context: storeHash, user } = decodePayload(context);
-    const hasUser = await db.hasStoreUser(storeHash, user?.id);
+    try {
+        if (typeof context !== 'string') {
+            throw new Error('Context must be a string');
+        }
+        if (!context) {
+            throw new Error('Context is required');
+        }
 
-    // Before retrieving session/ hitting APIs, check user
-    if (!hasUser) {
-        throw new Error('User is not available. Please login or ensure you have access permissions.');
+        const decoded = decodePayload(context) as any;
+        const storeHash = decoded?.context;
+        const user = decoded?.user;
+
+        if (!storeHash) {
+            throw new Error('Store hash not found in decoded context');
+        }
+        if (!user?.id) {
+            throw new Error('User ID not found in decoded context');
+        }
+
+        const hasUser = await db.hasStoreUser(storeHash, user.id);
+
+        // Before retrieving session/ hitting APIs, check user
+        if (!hasUser) {
+            throw new Error('User is not available. Please login or ensure you have access permissions.');
+        }
+
+        const accessToken = await db.getStoreToken(storeHash);
+
+        if (!accessToken) {
+            throw new Error('Access token not found for store');
+        }
+
+        return { accessToken, storeHash, user };
+    } catch (error) {
+        // Re-throw with more context
+        if (error.message) {
+            throw new Error(`Session validation failed: ${error.message}`);
+        }
+        throw error;
     }
-
-    const accessToken = await db.getStoreToken(storeHash);
-
-    return { accessToken, storeHash, user };
 }
 
 // JWT functions to sign/ verify 'context' query param from /api/auth||load
