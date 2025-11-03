@@ -6,48 +6,58 @@ This document provides guidance on troubleshooting common issues with the Custom
 
 If the Segments tab shows an infinite loading spinner, follow these steps to diagnose the issue:
 
-### 0. Missing KV Environment Variables (Most Common)
+### 0. Missing Database Environment Variables (Most Common)
 
-**Error Message:**
+**Error Messages:**
 ```
-Error loading segments: Session validation failed: @vercel/kv: Missing required environment variables KV_REST_API_URL and KV_REST_API_TOKEN
+Error loading segments: Session validation failed: @vercel/kv: Missing required environment variables
+Error loading segments: Session validation failed: Missing required environment variables UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN
 ```
 
 **Solution:**
 
-This means your Vercel KV database is not set up. Follow these steps:
+The app needs a database to store OAuth tokens and user sessions. As of 2025, **Vercel KV is deprecated**. Use **Upstash Redis** instead.
 
-1. **Go to Vercel Dashboard:**
-   - Navigate to your project
-   - Click on the "Storage" tab
+#### Quick Setup with Upstash Redis (Recommended)
 
-2. **Create a KV Database:**
+1. **Create Upstash Account:**
+   - Go to [https://upstash.com/](https://upstash.com/)
+   - Sign up for free (10,000 commands/day free tier)
    - Click "Create Database"
-   - Select "KV" (Redis-compatible key-value store)
-   - Give it a name (e.g., "customer-segments-kv")
-   - Select the same region as your deployment (or choose the recommended one)
+   - Choose a name and region (select "Global" for best performance)
    - Click "Create"
 
-3. **Connect to Your Project:**
-   - After creating the database, click "Connect to Project"
-   - Select your project from the dropdown
-   - Click "Connect"
-   - Vercel will automatically add these environment variables to your project:
-     - `KV_REST_API_URL`
-     - `KV_REST_API_TOKEN`
-     - `KV_REST_API_READ_ONLY_TOKEN`
-     - `KV_URL`
+2. **Get Your Credentials:**
+   - In the database details, find the "REST API" section
+   - Copy `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN`
+
+3. **Add to Vercel:**
+   - Go to your Vercel project → Settings → Environment Variables
+   - Add these three variables (for all environments):
+     ```
+     DB_TYPE=upstash
+     UPSTASH_REDIS_REST_URL=https://your-database.upstash.io
+     UPSTASH_REDIS_REST_TOKEN=your-token-here
+     ```
 
 4. **Redeploy:**
-   - Go to the "Deployments" tab
-   - Click "Redeploy" on your latest deployment
-   - OR push a new commit to trigger automatic deployment
+   - Go to Deployments tab and click "Redeploy"
+   - OR push a new commit to trigger deployment
 
 5. **Reinstall the App:**
-   - After the deployment completes, you'll need to reinstall the BigCommerce app
-   - This will create the necessary session data in your KV database
+   - Reinstall the BigCommerce app to create session data in the new database
 
-**Why this happens:** The app needs a database to store OAuth tokens, user sessions, and store information. Without KV configured, the app cannot validate sessions or make API calls to BigCommerce.
+#### Alternative: Use Existing Vercel KV (Legacy)
+
+If you already have a Vercel KV database (created before June 2025), you can continue using it:
+- Set `DB_TYPE=vercel-kv` in environment variables
+- Ensure `KV_REST_API_URL` and `KV_REST_API_TOKEN` are set
+
+**Note:** Vercel KV is deprecated. New projects should use Upstash.
+
+For detailed setup instructions and alternatives, see [STORAGE_SETUP.md](./STORAGE_SETUP.md).
+
+**Why this happens:** The app needs a database to store OAuth tokens, user sessions, and store information. Without database configured, the app cannot validate sessions or make API calls to BigCommerce.
 
 ### 1. Check Browser Console Logs
 

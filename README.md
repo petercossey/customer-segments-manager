@@ -11,33 +11,38 @@ This app is provided `as-is` with no guarantees.
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/VitaliJud/customer-segments-manager)
 ## Vercel Installation
 
-To get BigCommerce App running for free using Cloud servers with Vercel, follow these instructions. You can choose between **Vercel KV** (recommended, no external database needed) or **Firebase** (requires external setup):
+To get BigCommerce App running for free using Cloud servers with Vercel, follow these instructions.
 
-### Option A: Vercel KV (Recommended - No External Database)
+> **Important (2025):** Vercel KV was deprecated in June 2025. Use **Upstash Redis** instead (same technology, direct integration).
+
+### Option A: Upstash Redis (Recommended - Free Tier, Serverless)
 
 1. Fork or Clone Repository
 2. [Start New Project on Vercel](https://vercel.com/docs/concepts/deployments/git#deploying-a-git-repository)
 3. Create an Account or Login as existing
 4. Select Current Repository as your New Project
 5. Assign domain if needed or continue with shared Vercelapp
-6. [Create Vercel KV Database](https://vercel.com/docs/storage/vercel-kv/quickstart)
-    - Go to Storage tab in your Vercel project
-    - Click "Create Database" > Select "KV"
-    - Choose a name for your database and select your region
-    - Click "Create" - environment variables will be automatically added to your project
+6. [Create Upstash Redis Database](https://upstash.com/)
+    - Sign up at [upstash.com](https://upstash.com) (free tier: 10,000 commands/day)
+    - Click "Create Database"
+    - Choose a name and select "Global" for best performance
+    - Copy `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` from the REST API section
 7. [Register a draft app.](https://developer.bigcommerce.com/api-docs/apps/quick-start#register-a-draft-app)
     - Configure Callback URLs based on your Vercel's Project domain
     - Example callbacks `'https://{project_id}.vercel.app/api/{auth||load||uninstall}'`
     - Get Client ID and Secret Key from you BC App credentials
 8. Update Vercel Environment Variables (Settings > Environment Variables)
-    - DB_TYPE - `vercel-kv`
-    - AUTH_CALLBACK - Callback URL saved in BC App (e.g., `https://{project_id}.vercel.app/api/auth`)
-    - JWT_KEY - any 32-character random string, JWT key should be at least 32 random characters (256 bits) for HS256
-    - CLIENT_ID - BC App Client ID in Devtools
-    - CLIENT_SECRET - BC App Client Secret in Devtools
-    - Note: KV_* variables are automatically set when you create the Vercel KV database
+    - `DB_TYPE` - `upstash`
+    - `UPSTASH_REDIS_REST_URL` - URL from Upstash dashboard
+    - `UPSTASH_REDIS_REST_TOKEN` - Token from Upstash dashboard
+    - `AUTH_CALLBACK` - Callback URL saved in BC App (e.g., `https://{project_id}.vercel.app/api/auth`)
+    - `JWT_KEY` - any 32-character random string, JWT key should be at least 32 random characters (256 bits) for HS256
+    - `CLIENT_ID` - BC App Client ID in Devtools
+    - `CLIENT_SECRET` - BC App Client Secret in Devtools
 9. Redeploy your app to apply the environment variables
 10. [Install the app and launch.](https://developer.bigcommerce.com/api-docs/apps/quick-start#install-the-app)
+
+For detailed storage setup instructions and alternatives, see [STORAGE_SETUP.md](./STORAGE_SETUP.md).
 
 ### Option B: Firebase (External Database)
 
