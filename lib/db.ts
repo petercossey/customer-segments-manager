@@ -6,16 +6,16 @@ let db: Db;
 
 switch (DB_TYPE) {
     case 'firebase':
-        db = require('./dbs/firebase');
+        db = require('./dbs/firebase').default;
         break;
     case 'mysql':
-        db = require('./dbs/mysql');
+        db = require('./dbs/mysql').default;
         break;
     case 'vercel-kv':
-        db = require('./dbs/vercel-kv');
+        db = require('./dbs/vercel-kv').default;
         break;
     default:
-        db = require('./dbs/firebase');
+        db = require('./dbs/firebase').default;
         break;
 }
 
