@@ -6,6 +6,49 @@ This document provides guidance on troubleshooting common issues with the Custom
 
 If the Segments tab shows an infinite loading spinner, follow these steps to diagnose the issue:
 
+### 0. Missing KV Environment Variables (Most Common)
+
+**Error Message:**
+```
+Error loading segments: Session validation failed: @vercel/kv: Missing required environment variables KV_REST_API_URL and KV_REST_API_TOKEN
+```
+
+**Solution:**
+
+This means your Vercel KV database is not set up. Follow these steps:
+
+1. **Go to Vercel Dashboard:**
+   - Navigate to your project
+   - Click on the "Storage" tab
+
+2. **Create a KV Database:**
+   - Click "Create Database"
+   - Select "KV" (Redis-compatible key-value store)
+   - Give it a name (e.g., "customer-segments-kv")
+   - Select the same region as your deployment (or choose the recommended one)
+   - Click "Create"
+
+3. **Connect to Your Project:**
+   - After creating the database, click "Connect to Project"
+   - Select your project from the dropdown
+   - Click "Connect"
+   - Vercel will automatically add these environment variables to your project:
+     - `KV_REST_API_URL`
+     - `KV_REST_API_TOKEN`
+     - `KV_REST_API_READ_ONLY_TOKEN`
+     - `KV_URL`
+
+4. **Redeploy:**
+   - Go to the "Deployments" tab
+   - Click "Redeploy" on your latest deployment
+   - OR push a new commit to trigger automatic deployment
+
+5. **Reinstall the App:**
+   - After the deployment completes, you'll need to reinstall the BigCommerce app
+   - This will create the necessary session data in your KV database
+
+**Why this happens:** The app needs a database to store OAuth tokens, user sessions, and store information. Without KV configured, the app cannot validate sessions or make API calls to BigCommerce.
+
 ### 1. Check Browser Console Logs
 
 Open your browser's developer tools (F12) and check the Console tab. Look for logs prefixed with:
