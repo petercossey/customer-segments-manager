@@ -11,6 +11,9 @@ switch (DB_TYPE) {
     case 'mysql':
         db = require('./dbs/mysql');
         break;
+    case 'vercel-kv':
+        db = require('./dbs/vercel-kv');
+        break;
     default:
         db = require('./dbs/firebase');
         break;

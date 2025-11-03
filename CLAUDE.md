@@ -38,12 +38,13 @@ npm run db:setup        # Initialize database (see scripts/db.js)
 
 ### Database Abstraction Layer
 Located in `lib/db.ts` and `lib/dbs/`:
-- **Pluggable backends**: Supports Firebase (default) and MySQL via `DB_TYPE` env var
-- **Key collections**:
+- **Pluggable backends**: Supports Vercel KV (recommended for Vercel), Firebase, and MySQL via `DB_TYPE` env var
+- **Key collections/keys**:
   - `users`: Global user data (email, username) persists across store installs
   - `store`: Store-specific data (accessToken, adminId, scope)
   - `storeUsers`: Junction table for multi-user apps (userId_storeHash composite keys)
-- Both implementations expose identical interface defined in `types/db.ts`
+- All implementations expose identical interface defined in `types/db.ts`
+- **Vercel KV** uses Redis-style keys: `user:{userId}`, `store:{storeHash}`, `storeUser:{userId}_{storeHash}`
 
 ### API Structure
 All endpoints in `pages/api/` follow pattern:
@@ -78,7 +79,8 @@ Required variables (see README.md for full setup):
 - `CLIENT_ID`, `CLIENT_SECRET`: BigCommerce app credentials
 - `AUTH_CALLBACK`: OAuth callback URL (e.g., `https://domain.com/api/auth`)
 - `JWT_KEY`: 32+ character secret for JWT signing (256 bits for HS256)
-- `DB_TYPE`: `firebase` or `mysql`
+- `DB_TYPE`: `vercel-kv`, `firebase`, or `mysql`
+- Vercel KV: `KV_REST_API_URL`, `KV_REST_API_TOKEN`, etc. (auto-set by Vercel when creating KV database)
 - Firebase: `FIRE_API_KEY`, `FIRE_DOMAIN`, `FIRE_PROJECT_ID`
 - MySQL: `MYSQL_HOST`, `MYSQL_DATABASE`, `MYSQL_USER`, `MYSQL_PASSWORD`
 
@@ -97,7 +99,7 @@ Required variables (see README.md for full setup):
 4. Create SWR hooks in `lib/hooks.ts` for data fetching
 
 ### Database Schema Changes
-Implement changes in both `lib/dbs/firebase.ts` and `lib/dbs/mysql.ts` to maintain interface compatibility.
+Implement changes in all database adapters (`lib/dbs/vercel-kv.ts`, `lib/dbs/firebase.ts`, and `lib/dbs/mysql.ts`) to maintain interface compatibility.
 
 ### Node Version Requirements
 - Node: `18.x`, `20.x`, or `22.x`
