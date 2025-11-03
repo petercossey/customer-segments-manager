@@ -33,12 +33,20 @@ const Segments = () => {
     const router = useRouter()
     const {
         segments,
-        // segmentMeta,
-        // segmentsLoading,
-        // segmentError,
+        segmentMeta,
+        segmentsLoading,
+        segmentError,
         mutateSegments,
     } = useSegments()
     const encodedContext = useSession()?.context;
+
+    console.log('[Segments] Component state:', {
+        segments: segments ? `${segments.length} items` : 'null',
+        segmentMeta,
+        segmentsLoading,
+        segmentError: segmentError?.message,
+        encodedContext: encodedContext ? 'present' : 'missing'
+    });
 
     const handleDeleteSegment = async (): Promise<void> => {
         setDeleting(true)
@@ -107,8 +115,35 @@ const Segments = () => {
         />
     )
 
-    return segmentItems
-        ? <Panel>
+    // Show error state
+    if (segmentError) {
+        console.error('[Segments] Error state:', segmentError);
+        return (
+            <Panel>
+                <H2>Segments</H2>
+                <AlertsManager manager={alertsManager} />
+                <Text color="danger">
+                    Error loading segments: {segmentError?.message || 'Unknown error'}
+                </Text>
+                <Text marginTop="medium">
+                    Check the browser console for more details.
+                </Text>
+                <Button marginTop="medium" onClick={() => mutateSegments()}>
+                    Retry
+                </Button>
+            </Panel>
+        );
+    }
+
+    // Show loading state
+    if (segmentsLoading) {
+        console.log('[Segments] Showing loading state');
+        return <Loading />;
+    }
+
+    // Show segments table
+    return (
+        <Panel>
             <H2>Segments</H2>
             <AlertsManager manager={alertsManager} />
             <Table
@@ -116,7 +151,7 @@ const Segments = () => {
                     { header: 'Segment name', hash: 'name', render: ({ id, name }) => renderName(id, name), isSortable: true },
                     { header: 'Action', hideHeader: true, hash: 'id', render: ({ id, name }) => renderAction(id, name) },
                 ]}
-                items={segmentItems ? segmentItems : []}
+                items={segmentItems || []}
                 itemName="Segments"
                 stickyHeader
             />
@@ -144,7 +179,7 @@ const Segments = () => {
                 </Text>
             </Modal>
         </Panel>
-        : <Loading />
+    )
 }
 
 export default Segments

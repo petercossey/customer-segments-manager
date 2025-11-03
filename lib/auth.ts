@@ -50,39 +50,59 @@ export function setSession(session: SessionProps) {
 
 export async function getSession({ query: { context = '' } }: NextApiRequest) {
     try {
+        console.log('[getSession] Starting session validation');
+        console.log('[getSession] Context received:', context ? `${context.substring(0, 20)}...` : 'empty');
+
         if (typeof context !== 'string') {
+            console.error('[getSession] Context is not a string:', typeof context);
             throw new Error('Context must be a string');
         }
         if (!context) {
+            console.error('[getSession] Context is empty');
             throw new Error('Context is required');
         }
 
+        console.log('[getSession] Decoding context');
         const decoded = decodePayload(context) as any;
         const storeHash = decoded?.context;
         const user = decoded?.user;
 
+        console.log('[getSession] Decoded context:', {
+            storeHash,
+            userId: user?.id,
+            userEmail: user?.email
+        });
+
         if (!storeHash) {
+            console.error('[getSession] Store hash not found in decoded context');
             throw new Error('Store hash not found in decoded context');
         }
         if (!user?.id) {
+            console.error('[getSession] User ID not found in decoded context');
             throw new Error('User ID not found in decoded context');
         }
 
+        console.log('[getSession] Checking if user exists in store');
         const hasUser = await db.hasStoreUser(storeHash, user.id);
 
         // Before retrieving session/ hitting APIs, check user
         if (!hasUser) {
+            console.error('[getSession] User not found in storeUsers:', { storeHash, userId: user.id });
             throw new Error('User is not available. Please login or ensure you have access permissions.');
         }
 
+        console.log('[getSession] User exists, retrieving access token');
         const accessToken = await db.getStoreToken(storeHash);
 
         if (!accessToken) {
+            console.error('[getSession] Access token not found for store:', storeHash);
             throw new Error('Access token not found for store');
         }
 
+        console.log('[getSession] Session validation successful');
         return { accessToken, storeHash, user };
     } catch (error) {
+        console.error('[getSession] Error during session validation:', error.message);
         // Re-throw with more context
         if (error.message) {
             throw new Error(`Session validation failed: ${error.message}`);
