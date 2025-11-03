@@ -112,3 +112,14 @@ export async function deleteStore({ store_hash: storeHash }: SessionProps) {
 
     await deleteDoc(ref);
 }
+
+// Default export for CommonJS compatibility
+export default {
+    setUser,
+    setStore,
+    setStoreUser,
+    deleteUser,
+    hasStoreUser,
+    getStoreToken,
+    deleteStore,
+};

@@ -91,3 +91,14 @@ export async function getStoreToken(storeHash: string) {
 export async function deleteStore({ store_hash: storeHash }: SessionProps) {
     await query('DELETE FROM stores WHERE storeHash = ?', storeHash);
 }
+
+// Default export for CommonJS compatibility
+export default {
+    setUser,
+    setStore,
+    setStoreUser,
+    deleteUser,
+    hasStoreUser,
+    getStoreToken,
+    deleteStore,
+};

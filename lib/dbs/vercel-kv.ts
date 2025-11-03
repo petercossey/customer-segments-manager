@@ -104,3 +104,14 @@ export async function deleteStore({ store_hash: storeHash }: SessionProps) {
 
     await kv.del(key);
 }
+
+// Default export for CommonJS compatibility
+export default {
+    setUser,
+    setStore,
+    setStoreUser,
+    deleteUser,
+    hasStoreUser,
+    getStoreToken,
+    deleteStore,
+};
