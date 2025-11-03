@@ -51,7 +51,6 @@ export function setSession(session: SessionProps) {
 export async function getSession({ query: { context = '' } }: NextApiRequest) {
     try {
         console.log('[getSession] Starting session validation');
-        console.log('[getSession] Context received:', context ? `${context.substring(0, 20)}...` : 'empty');
 
         if (typeof context !== 'string') {
             console.error('[getSession] Context is not a string:', typeof context);
@@ -61,6 +60,8 @@ export async function getSession({ query: { context = '' } }: NextApiRequest) {
             console.error('[getSession] Context is empty');
             throw new Error('Context is required');
         }
+
+        console.log('[getSession] Context received:', context.substring(0, 20) + '...');
 
         console.log('[getSession] Decoding context');
         const decoded = decodePayload(context) as any;
